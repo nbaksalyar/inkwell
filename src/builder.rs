@@ -1672,6 +1672,29 @@ impl<'ctx> Builder<'ctx> {
         T::new(value)
     }
 
+    // Note: see comment on build_int_compare regarding return value type
+    pub fn build_pointer_compare<T: PointerMathValue<'ctx>>(
+        &self,
+        op: IntPredicate,
+        lhs: T,
+        rhs: T,
+        name: &str,
+    ) -> IntValue<'ctx> {
+        let c_string = to_c_str(name);
+
+        let value = unsafe {
+            LLVMBuildICmp(
+                self.builder,
+                op.into(),
+                lhs.as_value_ref(),
+                rhs.as_value_ref(),
+                c_string.as_ptr(),
+            )
+        };
+
+        unsafe { IntValue::new(value) }
+    }
+
     // SubType: <F>(&self, op, lhs: &FloatValue<F>, rhs: &FloatValue<F>, name) -> IntValue<bool> { ?
     // Note: see comment on build_int_compare regarding return value type
     pub fn build_float_compare<T: FloatMathValue<'ctx>>(
